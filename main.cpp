@@ -28,12 +28,17 @@ struct Pila{
     nodos* cima;
     int tam;
 };
-
+//funciones
 void crearCartas(carta*& vector);
 bool repetido(int x, int y[],int i,int tam);
 void agregarPila(Pila *& pila,carta cartas);
 void imprimirPila(Pila* pila);
 void revolvercartas(carta *cartas,Pila*pila);
+int crearJugadores(jugador *&jugadores);
+void eliminarCima(Pila *&pila);
+void tomarcarta(jugador &jugadores,Pila* &pila);
+void repartirJuego(jugador *&ugadores,Pila*& pila,int c);
+void imprimirBaraja(jugador jugadores);
 
 int main()
 {
@@ -42,33 +47,30 @@ int main()
     srand((unsigned) time(0));
     crearCartas(cartas);
     Pila *pila=new Pila();
-    //for(int i=0;i<108;i++){
-      //  agregarPila(pila,*(cartas+i));
-    //}
     revolvercartas(cartas,pila);
-    imprimirPila(pila);
-    int i;
+    jugador *jugadores;
+    int NumeroJugadores=crearJugadores(jugadores);
 
-    int posiciones[108];
-    for(int i=0;i<108;i++){
-        posiciones[i]=-1;
+
+    repartirJuego(jugadores,pila,NumeroJugadores);
+
+    imprimirBaraja(*(jugadores));
+    cout<<"--------------------------------------------------"<<endl;
+    imprimirBaraja(*(jugadores+1));
+    cout<<"--------------------------------------------------"<<endl;
+    imprimirBaraja(*(jugadores+2));
+
+
+
+
+
+
+
+    for(int i=0;i<NumeroJugadores;i++){
+        delete [] (jugadores+i)->nombre;
     }
-    int j=0;
-    while(j<108) {
-        int i=0,x;
-        x=rand()%109;
-        if(!repetido(x,posiciones,i,108)){
-            posiciones[j]=x;
-            j++;
-        }
-
-    }
-
-
-
     delete [] cartas;
-
-
+    delete [] jugadores;
 
     return 0;
 }
@@ -236,6 +238,64 @@ void revolvercartas(carta *cartas,Pila *pila) {
         agregarPila(pila,*(cartas+posiciones[i]-1));
     }
 
+}
+int crearJugadores(jugador *&jugadores){
+    cout<<"escriba el numero de jugadores que van a participar"<<endl;
+    int c=0;
+    cin>>c;
+    jugadores=new jugador[c];
+    cin.ignore();
+    for(int i=0;i<c;i++){
+        (jugadores+i)->nombre=new char[30];
+        cout<<"escriba el nombre del jugador "<<i+1<<endl;
+        cin.getline((jugadores+i)->nombre,30,'\n');
+        (jugadores+i)->cantidad=0;
+        (jugadores+i)->mazo=new carta();
+    }
+    return c;
+}
+void eliminarCima(Pila *&pila){
+    nodos *auxiliar=pila->cima;
+    pila->cima->cartas=auxiliar->cartas;
+    pila->cima=auxiliar->siguiente;
+    pila->tam--;
+    delete auxiliar;
+}
+void tomarcarta(jugador &jugadores,Pila*& pila){
+
+    jugador aux;
+    aux.mazo=new carta[jugadores.cantidad+1];
+    if(jugadores.cantidad==0) {
+        *(aux.mazo)=pila->cima->cartas;
+    }
+    else{
+       for(int i=0;i<jugadores.cantidad;i++){
+           *(aux.mazo+i)=*(jugadores.mazo+i);
+       }
+        *(aux.mazo+jugadores.cantidad)=pila->cima->cartas;
+    }
+    eliminarCima(pila);
+    jugadores.mazo=aux.mazo;
+
+
+    jugadores.cantidad++;
+
+}
+
+void repartirJuego(jugador *&jugadores,Pila*& pila,int c){
+    for(int i=0;i<c;i++){
+        for(int j=0;j<7;j++){
+            tomarcarta(*(jugadores+i),pila);
+        }
+    }
+
+}
+void imprimirBaraja(jugador jugadores){
+
+    cout<<"baraja del jugador "<<jugadores.nombre<<endl;
+    for(int i=0;i<jugadores.cantidad;i++) {
+        cout<<(jugadores.mazo+i)->valor<<'\t'<<(jugadores.mazo+i)->color<<endl;
+    }
 }
 
 
